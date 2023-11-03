@@ -1,0 +1,143 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>펭귄쌓기</title>
+    <script src="/phaser.js"></script>
+</head>
+<body>
+    <script type="text/javascript">
+
+    var config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 300 },
+            debug: false
+        }
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+        }
+    };
+
+    var jumpPenguin;
+    var bubblePenguin;
+    var dummyPenguin;
+    var platforms;
+    var score = 0;
+    var scoreText;
+    var gameOver = false;
+
+    var game = new Phaser.Game(config);
+
+    function preload()//데이터를 불러 올 떄 사용하는 함수
+    {
+        this.load.image('sky', 'assets/sky.png'); 
+        this.load.image('ground', 'assets/platform.png'); 
+        this.load.image('star', 'assets/star.png'); 
+        this.load.image('bomb', 'assets/bomb.png');
+        this.load.image('jumpPenguin', 'assets/jumpPenguin.png'); 
+        this.load.image('bubblePenguin', 'assets/bubblePenguin.png');
+        this.load.image('dummyPenguin', 'assets/penguin.png'); 
+        this.load.spritesheet('dude', 'assets/dude.png', 
+        {frameWidth: 32, frameHeight: 48 }); 
+    }
+
+    
+    function create()//처음 게임을 실행할 떄 수행되는 함수
+    {
+        this.add.image(400, 300, 'sky');
+        platforms = this.physics.add.staticGroup();
+        platforms.create(400, 568, 'ground').setScale(2).refreshBody();
+
+        
+        dummyPenguin = this.physics.add.staticGroup();
+        dummyPenguin.create(400, 490, 'dummyPenguin').setScale(1/6).refreshBody();
+        
+        //bubblePenguin = this.physics.add.sprite(400, 540, 'bubblePenguin').setScale(1/6).refreshBody(); 
+        bubblePenguin = this.physics.add.sprite(this.cameras.main.width*1, this.cameras.main.height-55, 'bubblePenguin').setScale(1/6);
+        bubblePenguin.body.velocity.set(250, 0);
+        bubblePenguin.body.collideWorldBounds = true;
+        bubblePenguin.body.bounce.set(1);
+        bubblePenguin.setInteractive();
+        
+        bubblePenguin.on('pointerdown', function(){// 버블펭귄 클릭했을 때
+            jumpPenguin= this.physics.add.sprite(bubblePenguin.x, this.cameras.main.height-55, 'jumpPenguin').setScale(1/6);
+            jumpPenguin.setVelocityY(-400);
+            bubblePenguin.destroy();
+            
+            this.time.addEvent({ //딜레이 주기
+                delay: 1000,
+                callback: ()=>{
+                // 딜레이 후 행동
+                jumpPenguin.setTint(0xf0ff00);
+                this.physics.add.collider(jumpPenguin, dummyPenguin);
+                
+                //jumpPenguin.setCollideWorldBounds(true);
+                },
+            })
+            //bubblePenguin.setTint(0xf0ff00);
+            }, this);
+            
+        
+
+        //this.bubblePenguin.on('gameobjectdown',this.onObjectClicked);
+        //bubblePenguin.create(400, 540, 'bubblePenguin').setScale(1/6).refreshBody(); 
+        //스코어
+        scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+    }
+
+    function update()
+    {   
+        
+    }
+
+    function penguinStacking(jumpPenguin, dummyPenguin)
+    {
+        var xDifference = dummyPenguin.x - (jumpPenguin.x + dummyPenguin.width);
+        var yDifference = dummyPenguin.y - (jumpPenguin.y + dummyPenguin.height);
+        if(xDifference < 0 && yDifference < 0){
+            score += 10;
+            scoreText.setText('Score: ' + score);
+            PenguinUp = true;
+        }
+        
+       // this.physics.pause();
+    }
+
+    function collectPenguin (penguin, dummyPenguin)
+    {
+
+        //  Add and update the score
+        score += 10;
+        scoreText.setText('Score: ' + score);
+
+        if (stars.countActive(true) === 0)
+        {
+            //  A new batch of stars to collect
+            stars.children.iterate(function (child) {
+                child.enableBody(true, child.x, 0, true, true);
+            });
+
+            var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+
+            var bomb = bombs.create(x, 16, 'bomb');
+            bomb.setBounce(1);
+            bomb.setCollideWorldBounds(true);
+            bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+            bomb.allowGravity = false;
+
+        }
+    }
+
+    
+
+    </script>
+</body>
+</html>
