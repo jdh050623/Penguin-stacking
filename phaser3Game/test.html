@@ -7,71 +7,111 @@
 </head>
 <body>
     <script type="text/javascript">
-    
-    class Example extends Phaser.Scene
+class Example extends Phaser.Scene
 {
+    constructor ()
+    {
+        super();
+    }
+
     preload ()
     {
-        this.load.image('atari','assets/bomb.png');
-        this.load.image('ball', 'assets/star.png');
-        this.load.image('mushroom', 'assets/star.png');
+        this.load.image('map', 'assets/sky.png');
+        this.load.image('ship', 'assets/star.png');
     }
 
     create ()
     {
-        const atari = this.physics.add.image(250, 200, 'atari')
-            .setImmovable(true);
+        this.cameras.main.setBounds(0, 0, 1024, 2048);
 
-        const sprite = this.physics.add.image(400, 300, 'mushroom')
-            .setVelocity(100, 200)
-            .setBounce(1, 1)
-            .setCollideWorldBounds(true)
-            .setGravityY(200);
+        this.add.image(0, 0, 'map').setOrigin(0).setScrollFactor(1);
 
-        // This enables the world 'collide' event, which will be detected by the collider below.
-        sprite.body.onCollide = true;
+        this.cursors = this.input.keyboard.createCursorKeys();
 
-        const balls = this.physics.add.staticGroup({
-            key: 'ball',
-            frameQuantity: 30
-        });
+        this.mode = 1; // 0 = direct, 1 = physics
+        this.directSpeed = 4.5;
 
-        Phaser.Actions.PlaceOnRectangle(
-            balls.getChildren(),
-            new Phaser.Geom.Rectangle(84, 84, 616, 416)
-        );
+        this.ship = this.physics.add.image(400, 300, 'ship');
 
-        // Static bodies must be updated manually if their parent game objects are moved.
-        balls.refresh();
+        this.cameras.main.startFollow(this.ship, true);
+        // this.cameras.main.startFollow(this.ship, true, 0.09, 0.09);
 
-        this.physics.add.collider(sprite, atari);
-        this.physics.add.collider(sprite, balls);
+        this.cameras.main.setZoom(1);
+    }
 
-        this.physics.world.on('collide', (gameObject1, gameObject2, body1, body2) =>
+    update ()
+    {
+        if (this.mode === 0)
         {
-            gameObject1.setTint(0xf500ff3600);
+            this.updateDirect();
+        }
+        else
+        {
+            this.updatePhysics();
+        }
+    }
 
-            gameObject2.setTint(0xf500ff3600);
+    updatePhysics ()
+    {
+        this.ship.setVelocity(0);
 
-        });
+        if (this.cursors.left.isDown)
+        {
+            this.ship.setAngle(-90).setVelocityX(-200);
+        }
+        else if (this.cursors.right.isDown)
+        {
+            this.ship.setAngle(90).setVelocityX(200);
+        }
+
+        if (this.cursors.up.isDown)
+        {
+            this.ship.setAngle(0).setVelocityY(-200);
+        }
+        else if (this.cursors.down.isDown)
+        {
+            this.ship.setAngle(-180).setVelocityY(200);
+        }
+    }
+
+    updateDirect ()
+    {
+        if (this.cursors.left.isDown)
+        {
+            this.ship.setAngle(-90);
+            this.ship.x -= this.directSpeed;
+        }
+        else if (this.cursors.right.isDown)
+        {
+            this.ship.setAngle(90);
+            this.ship.x += this.directSpeed;
+        }
+
+        if (this.cursors.up.isDown)
+        {
+            this.ship.setAngle(0);
+            this.ship.y -= this.directSpeed;
+        }
+        else if (this.cursors.down.isDown)
+        {
+            this.ship.setAngle(-180);
+            this.ship.y += this.directSpeed;
+        }
     }
 }
 
 const config = {
     type: Phaser.AUTO,
+    parent: 'phaser-example',
     width: 800,
     height: 600,
-    parent: 'phaser-example',
+    pixelArt: true,
     physics: {
         default: 'arcade',
-        arcade: { debug: false }
     },
     scene: Example
 };
-
 const game = new Phaser.Game(config);
-    
-
     </script>
 </body>
 </html>

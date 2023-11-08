@@ -7,200 +7,93 @@
 </head>
 <body>
     <script type="text/javascript">
-     class Example extends Phaser.Scene
+    class Example extends Phaser.Scene
     {
-    // var config = {
-    // type: Phaser.AUTO,
-    // width: 800,
-    // height: 600,
-    // physics: {
-    //     default: 'arcade',
-    //     arcade: {
-    //         gravity: { y: 300 },
-    //         debug: false
-    //     }
-    // },
-    // scene: {
-    //     preload: preload,
-    //     create: create,
-    //     update: update
-    //     }
-    // };
-
-    jumpPenguin;
-    bubblePenguin;
-    dummyPenguin;
-    platforms;
-    score = 0;
-    scoreText;
-    gameOver = false;
-
-    preload()//데이터를 불러 올 떄 사용하는 함수
-    {
-        this.load.image('sky', 'assets/sky.png'); 
-        this.load.image('ground', 'assets/platform.png'); 
-        this.load.image('star', 'assets/star.png'); 
-        this.load.image('bomb', 'assets/bomb.png');
-        this.load.image('jumpPenguin', 'assets/jumpPenguin.png'); 
-        this.load.image('bubblePenguin', 'assets/bubblePenguin.png');
-        this.load.image('dummyPenguin', 'assets/penguin.png'); 
-        this.load.spritesheet('dude', 'assets/dude.png', 
-        {frameWidth: 32, frameHeight: 48 }); 
-    }
-
-    
-    create()//처음 게임을 실행할 떄 수행되는 함수
-    {
-        var score =0;
-        this.add.image(400, 300, 'sky');
-        //platforms = this.physics.add.staticGroup();
-        //platforms.create(400, 568, 'ground').setScale(2).refreshBody();
-        
-        //dummyPenguin = game.add.group();
-        const dummyPenguin = this.physics.add.staticGroup({
-            key: 'dummyPenguin',
-            //frameQuantity: 1
-        });
-
-        Phaser.Actions.PlaceOnRectangle(
-            dummyPenguin.getChildren(),
-            new Phaser.Geom.Rectangle(400, 545, 0, 0)
-        );
-        //dummyPenguin.scaleXY(.1, .1);
-        // const dummyPenguin = this.physics.add.image(400, 550, 'dummyPenguin').setScale(1/6).refreshBody();
-        //dummyPenguin = this.physics.add.staticGroup();
-        //dummyPenguin.enableBody=true;
-        //dummyPenguin.create(400, 490, 'dummyPenguin').setScale(1/6).refreshBody();
-        
-
-        //bubblePenguin = this.physics.add.sprite(400, 540, 'bubblePenguin').setScale(1/6).refreshBody(); 
-        //bubblePenguin = game.add.group();
-        const bubblePenguin = this.physics.add.sprite(this.cameras.main.width*1, this.cameras.main.height-55, 'bubblePenguin').setScale(1/6).refreshBody();
-        bubblePenguin.body.velocity.set(250, 0);
-        bubblePenguin.body.collideWorldBounds = true;
-        bubblePenguin.body.bounce.set(1);
-        bubblePenguin.setInteractive();
-        bubblePenguin.enableBody=true;
-        
-        bubblePenguin.on('pointerdown', function(){// 버블펭귄 클릭했을 때
-            const jumpPenguin= this.physics.add.sprite(bubblePenguin.x, this.cameras.main.height-55, 'jumpPenguin').setScale(1/6);
-            jumpPenguin.setVelocityY(-400) .setGravityY(200).setCollideWorldBounds(false);
-            jumpPenguin.body.onCollide = true;
-            //jumpPenguin.setAll("outOfBoundsKill", true);
-            //jumpPenguin.setAll("checkWorldBounds", true);
-            bubblePenguin.destroy();
-            
-            this.time.addEvent({ //딜레이 주기
-                delay: 1000,
-                callback: ()=>{
-                // 딜레이 후 행동
-                
-                this.physics.add.collider(jumpPenguin, dummyPenguin);
-                //this.physics.add.collider(jumpPenguin,  dummyPenguin,  fnBallHitBrick);
-                jumpPenguin.setCollideWorldBounds(true);
-                jumpPenguin.setTint(0xf500ff3600);
-
-                //jumpPenguin.refresh();
-
-                    this.physics.add.collider(jumpPenguin, dummyPenguin);
-                
-                    dummyPenguin.refresh();
-                this.physics.world.on('collide', (gameObject1, gameObject2, body1, body2) =>
-                {
-                    //충돌시 발생
-                    const dummyPenguin = this.physics.add.staticGroup({
-                     key: 'dummyPenguin',
-                     });
-
-                    Phaser.Actions.PlaceOnRectangle(
-                    dummyPenguin.getChildren(),
-                    new Phaser.Geom.Rectangle(jumpPenguin.x, jumpPenguin.y, 0, 0) // 여기 수정
-                    );
-                    //dummyPenguin = this.physics.add.sprite(jumpPenguin.x, this.cameras.main.height-55);
-                    jumpPenguin.destroy();
-                    score = score+10;
-                    scoreText.setText('Score: ' + score);
-                });
-                
-                },
-            })
-            //bubblePenguin.setTint(0xf0ff00);
-            }, this);
-            
-            
-
-
-        //this.bubblePenguin.on('gameobjectdown',this.onObjectClicked);
-        //bubblePenguin.create(400, 540, 'bubblePenguin').setScale(1/6).refreshBody(); 
-        //스코어
-        var scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
-    }
-
-    update()
-    {   
-        
-    }
-
-    fnBallHitBrick(jumpPenguin, dummyPenguin)
-    {
-        jumpPenguin.setTint(0xf500ff300);
-    }
-
-    penguinStacking(jumpPenguin, dummyPenguin)
-    {
-        dummyPenguin.enableBody=true
-
-        // var xDifference = dummyPenguin.x - (jumpPenguin.x + dummyPenguin.width);
-        // var yDifference = dummyPenguin.y - (jumpPenguin.y + dummyPenguin.height);
-        // if(xDifference < 0 && yDifference < 0){
-        //     score += 10;
-        //     scoreText.setText('Score: ' + score);
-        //     PenguinUp = true;
-        // }
-        
-       // this.physics.pause();
-    }
-
-    collectPenguin (penguin, dummyPenguin)
-    {
-
-        //  Add and update the score
-        score += 10;
-        scoreText.setText('Score: ' + score);
-
-        if (stars.countActive(true) === 0)
+        preload()//데이터를 불러 올 떄 사용하는 함수
         {
-            //  A new batch of stars to collect
-            stars.children.iterate(function (child) {
-                child.enableBody(true, child.x, 0, true, true);
+            this.load.image('sky', 'assets/sky.png'); 
+            this.load.image('ground', 'assets/platform.png'); 
+            this.load.image('star', 'assets/star.png'); 
+            this.load.image('bomb', 'assets/bomb.png');
+            this.load.image('jumpPenguin', 'assets/jumpPenguin.png'); 
+            this.load.image('bubblePenguin', 'assets/bubblePenguin.png');
+            this.load.image('dummyPenguin', 'assets/penguin.png'); 
+            this.load.spritesheet('dude', 'assets/dude.png', 
+            {frameWidth: 32, frameHeight: 48 }); 
+        }
+
+        create()//처음 게임을 실행할 떄 수행되는 함수
+        {
+            this.add.image(400, 300, 'sky');
+
+            dummyPenguin = this.physics.add.sprite(400, 550, 'dummyPenguin').setScale(1/6).setImmovable();
+            dummyPenguin.setCollideWorldBounds(true);
+
+            bubblePenguin = this.physics.add.sprite(this.cameras.main.width*1, this.cameras.main.height-55, 'bubblePenguin').setScale(1/6).refreshBody();
+            bubblePenguin.body.velocity.set(600, 0);
+            bubblePenguin.body.collideWorldBounds = true;
+            bubblePenguin.body.bounce.set(1);
+            bubblePenguin.setInteractive();
+            bubblePenguin.enableBody=true;
+
+            bubblePenguin.on('pointerdown', function(){// 버블펭귄 클릭했을 때
+                jumpPenguin= this.physics.add.sprite(bubblePenguin.x, this.cameras.main.height-55, 'jumpPenguin').setScale(1/6);
+                jumpPenguin.setVelocityY(-600) .setGravityY(600).setCollideWorldBounds(false);
+                jumpPenguin.body.onCollide = true;
+                //bubblePenguin.destroy();
+                bubblePenguin.setAlpha(0);//투명화
+
+                this.time.addEvent({ //딜레이 주기
+                    delay: 1000,
+                    callback: ()=>{
+                    // 딜레이 후 행동
+                    this.physics.add.collider(jumpPenguin, dummyPenguin);
+                    jumpPenguin.setCollideWorldBounds(false);
+                    jumpPenguin.setTint(0xf500ff3600);
+                    },
+                })
+                //bubblePenguin.setTint(0xf0ff00);
+                }, this);
+
+            this.physics.world.on('collide', (gameObject1, gameObject2) =>
+            {
+                //충돌시 발생
+                dummyPenguin = this.physics.add.sprite(jumpPenguin.x, jumpPenguin.y, 'dummyPenguin').setScale(1/6).setImmovable().setCollideWorldBounds(true);
+                jumpPenguin.destroy();
+                bubblePenguin.setAlpha(1);
+                score += 10;
+                scoreText.setText('Score: ' + score);
             });
+            //스코어
+            scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+        }
 
-            var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
-
-            var bomb = bombs.create(x, 16, 'bomb');
-            bomb.setBounce(1);
-            bomb.setCollideWorldBounds(true);
-            bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
-            bomb.allowGravity = false;
+        update()
+        {   
 
         }
-    }
-    
-    }
-    const config = {
-    type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    parent: 'phaser-example',
-    physics: {
-        default: 'arcade',
-        arcade: { debug: false }
-    },
-    scene: Example
-};
 
-const game = new Phaser.Game(config);
+        }
+        const config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        parent: 'phaser-example',
+        physics: {
+            default: 'arcade',
+            arcade: { debug: false }
+        },
+        scene: Example
+    };
 
+    var dummyPenguin;
+    var bubblePenguin;
+    var jumpPenguin;
+    var scoreText
+    var score = 0;
+    var gameOver = false;
+
+    const game = new Phaser.Game(config);
     </script>
 </body>
 </html>
