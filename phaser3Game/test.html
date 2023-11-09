@@ -2,115 +2,79 @@
 <html lang="en"> 
 <head> 
     <meta charset="UTF-8" />
-    <title>펭귄쌓기</title>
-    <script src="/phaser.min.js"></script>
+    <title>1테스트</title>
+    <script src="/phaser.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js"></script> 
 </head>
 <body>
     <script type="text/javascript">
+        
+// velocityFromRotation() can be called like a plain function.
+// velocityFromRotation() can be called like a plain function.
+//const VelocityFromRotation = Phaser.Physics.Arcade.ArcadePhysics.prototype.velocityFromRotation;
 class Example extends Phaser.Scene
 {
-    constructor ()
-    {
-        super();
-    }
+    // private controls!: Phaser.Cameras.Controls.SmoothedKeyControl
 
-    preload ()
-    {
-        this.load.image('map', 'assets/sky.png');
-        this.load.image('ship', 'assets/star.png');
-    }
+	preload()
+	{
+		this.load.image('grid', 'assets/sky.png');
+	}
 
-    create ()
-    {
-        this.cameras.main.setBounds(0, 0, 1024, 2048);
+	create()
+	{
+        this.ground = this.add.tileSprite(400, 300, 0, 0, 'grid').setScrollFactor(0, 0);
+        
+		const cursors = this.input.keyboard.createCursorKeys();
+	
+		this.controls = new Phaser.Cameras.Controls.SmoothedKeyControl({
+			camera: this.cameras.main,
 
-        this.add.image(0, 0, 'map').setOrigin(0).setScrollFactor(1);
+			up: cursors.up,
+			down: cursors.down,
+			acceleration: 0.06,
+			drag: 0.0005,
+			maxSpeed: 1.0
+		})
+	
+		const cam = this.cameras.main
+	
+		const gui = new dat.GUI();
+	
+		const help = {
+			line1: 'Cursors to move'
+		}
+	
+		const f1 = gui.addFolder('Camera')
+		 f1.add(cam, 'y').listen();
+		 f1.add(cam, 'scrollY').listen();
+		 f1.open();
+        
+	}
 
-        this.cursors = this.input.keyboard.createCursorKeys();
-
-        this.mode = 1; // 0 = direct, 1 = physics
-        this.directSpeed = 4.5;
-
-        this.ship = this.physics.add.image(400, 300, 'ship');
-
-        this.cameras.main.startFollow(this.ship, true);
-        // this.cameras.main.startFollow(this.ship, true, 0.09, 0.09);
-
-        this.cameras.main.setZoom(1);
-    }
-
-    update ()
-    {
-        if (this.mode === 0)
-        {
-            this.updateDirect();
-        }
-        else
-        {
-            this.updatePhysics();
-        }
-    }
-
-    updatePhysics ()
-    {
-        this.ship.setVelocity(0);
-
-        if (this.cursors.left.isDown)
-        {
-            this.ship.setAngle(-90).setVelocityX(-200);
-        }
-        else if (this.cursors.right.isDown)
-        {
-            this.ship.setAngle(90).setVelocityX(200);
-        }
-
-        if (this.cursors.up.isDown)
-        {
-            this.ship.setAngle(0).setVelocityY(-200);
-        }
-        else if (this.cursors.down.isDown)
-        {
-            this.ship.setAngle(-180).setVelocityY(200);
-        }
-    }
-
-    updateDirect ()
-    {
-        if (this.cursors.left.isDown)
-        {
-            this.ship.setAngle(-90);
-            this.ship.x -= this.directSpeed;
-        }
-        else if (this.cursors.right.isDown)
-        {
-            this.ship.setAngle(90);
-            this.ship.x += this.directSpeed;
-        }
-
-        if (this.cursors.up.isDown)
-        {
-            this.ship.setAngle(0);
-            this.ship.y -= this.directSpeed;
-        }
-        else if (this.cursors.down.isDown)
-        {
-            this.ship.setAngle(-180);
-            this.ship.y += this.directSpeed;
-        }
-    }
+	update(time, deltaTime)
+	{
+		this.controls.update(deltaTime);
+        const { scrollX, scrollY } = this.cameras.main;
+        this.ground.setTilePosition(scrollX, scrollY);
+	}
 }
 
 const config = {
     type: Phaser.AUTO,
-    parent: 'phaser-example',
     width: 800,
     height: 600,
-    pixelArt: true,
+    parent: 'phaser-example',
     physics: {
         default: 'arcade',
+        arcade: { debug: false }
     },
+    scale: {
+		mode: Phaser.Scale.ScaleModes.FIT
+	},
     scene: Example
 };
+
 const game = new Phaser.Game(config);
     </script>
 </body>

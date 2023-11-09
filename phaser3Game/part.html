@@ -4,11 +4,17 @@
     <meta charset="UTF-8" />
     <title>펭귄쌓기</title>
     <script src="/phaser.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js"></script> 
 </head>
 <body>
     <script type="text/javascript">
     class Example extends Phaser.Scene
     {
+        constructor ()
+        {
+            super();
+        }
+
         preload()//데이터를 불러 올 떄 사용하는 함수
         {
             this.load.image('sky', 'assets/sky.png'); 
@@ -23,13 +29,15 @@
         }
 
         create()//처음 게임을 실행할 떄 수행되는 함수
-        {
-            this.add.image(400, 300, 'sky');
+        {   
+            const cursors = this.input.keyboard.createCursorKeys();
+            //this.add.tileSprite(400, 300, 0, 0, 'sky').setScrollFactor(0, 0);
+            this.ground = this.add.tileSprite(400, 300, 0, 0, 'sky').setScrollFactor(0, 0);
 
             dummyPenguin = this.physics.add.sprite(400, 550, 'dummyPenguin').setScale(1/6).setImmovable();
             dummyPenguin.setCollideWorldBounds(true);
 
-            bubblePenguin = this.physics.add.sprite(this.cameras.main.width*1, this.cameras.main.height-55, 'bubblePenguin').setScale(1/6).refreshBody();
+            bubblePenguin = this.physics.add.sprite(this.cameras.main.width*1,this.cameras.main.height, 'bubblePenguin').setScale(1/6).refreshBody();
             bubblePenguin.body.velocity.set(600, 0);
             bubblePenguin.body.collideWorldBounds = true;
             bubblePenguin.body.bounce.set(1);
@@ -37,7 +45,7 @@
             bubblePenguin.enableBody=true;
 
             bubblePenguin.on('pointerdown', function(){// 버블펭귄 클릭했을 때
-                jumpPenguin= this.physics.add.sprite(bubblePenguin.x, this.cameras.main.height-55, 'jumpPenguin').setScale(1/6);
+                jumpPenguin= this.physics.add.sprite(bubblePenguin.x, bubblePenguin.y, 'jumpPenguin').setScale(1/6);
                 jumpPenguin.setVelocityY(-600) .setGravityY(600).setCollideWorldBounds(false);
                 jumpPenguin.body.onCollide = true;
                 //bubblePenguin.destroy();
@@ -58,21 +66,53 @@
             this.physics.world.on('collide', (gameObject1, gameObject2) =>
             {
                 //충돌시 발생
+                cam.scrollY -= 95;
+                scoreText.y = cam.scrollY + 16;
+                // const { scrollX, scrollY } = this.cameras.main;
+                // scrollY += 50;
                 dummyPenguin = this.physics.add.sprite(jumpPenguin.x, jumpPenguin.y, 'dummyPenguin').setScale(1/6).setImmovable().setCollideWorldBounds(true);
                 jumpPenguin.destroy();
                 bubblePenguin.setAlpha(1);
+                //bubblePenguin. =cam.scrollY + 90;
                 score += 10;
                 scoreText.setText('Score: ' + score);
             });
             //스코어
             scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+            
+		    this.controls = new Phaser.Cameras.Controls.SmoothedKeyControl({
+			camera: this.cameras.main,
+			up: cursors.up,
+			down: cursors.down,
+			acceleration: 0.06,
+			maxSpeed: .5
+		    });
+
+                const cam = this.cameras.main
+
+                const gui = new dat.GUI();
+
+                const help = {
+                line1: 'Cursors to move'
+                //line2: 'Q & E to zoom'
+                }
+
+                const f1 = gui.addFolder('Camera')
+                 f1.add(cam, 'y').listen();
+                 f1.add(cam, 'scrollY').listen();
+                 f1.open();
+
         }
 
-        update()
-        {   
-
+        update(time, deltaTime)
+        {
+        	this.controls.update(deltaTime);
+            var { scrollX, scrollY } = this.cameras.main;
+            this.ground.setTilePosition(scrollX, scrollY);
+            
         }
-
+        
+        
         }
         const config = {
         type: Phaser.AUTO,
@@ -83,17 +123,20 @@
             default: 'arcade',
             arcade: { debug: false }
         },
+        // scale: {
+        // mode: Phaser.Scale.ScaleModes.FIT
+        // },
         scene: Example
-    };
-
-    var dummyPenguin;
-    var bubblePenguin;
-    var jumpPenguin;
-    var scoreText
-    var score = 0;
-    var gameOver = false;
-
-    const game = new Phaser.Game(config);
+        };
+        
+        var dummyPenguin;
+        var bubblePenguin;
+        var jumpPenguin;
+        var scoreText
+        var score = 0;
+        var gameOver = false;
+        
+        const game = new Phaser.Game(config);
     </script>
 </body>
 </html>
