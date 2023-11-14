@@ -81,6 +81,7 @@
                 scoreText.y = cam.scrollY + 16;
                 this.textSecond.y = cam.scrollY + 16;
                 this.textGameOver.y = cam.scrollY + 250;
+                this.textReady.y = cam.scrollY + 300;
                 bubblePenguin.y = cam.scrollY + 545;
                 rainbowContainer.y = cam.scrollY + 300;
                 score += 10;
@@ -90,8 +91,7 @@
             scoreText = this.add.text(50, 16, 'score : 0', { font: '32px Arial', fill: '#000' });
 
             //시간
-            second = 10;
-            gameState = 0;
+            
             this.textSecond = this.add.text(300,16,"Time : " + second + "초", { font: '32px Arial', fill: '#000'});
             this.time.addEvent({
         	delay: 1000, // 시간 단위 ms
@@ -153,16 +153,29 @@
             var { scrollX, scrollY } = this.cameras.main;
             this.sky.setTilePosition(scrollX, scrollY);
             this.textSecond.setText("Time : " + second + "초");
-            
+
+            if(gameState === 1){
+                this.textReady.visible = false;
+            }
+
             if(gameState === 0){
                 if (cursors.space.isDown)
                 {
                     gameState = 1;
-                    this.textReady.visible = false;
                 }
                 return;
             }else if ( gameState === 2){
                 this.textGameOver.visible = true; 
+                this.textReady.visible = true;
+                if (cursors.space.isDown)
+                {
+                    gameState = 1;
+                    this.textReady.visible = false;
+                    this.textGameOver.visible = false; 
+                    second = 100;
+                    score = 0;
+                    this.scene.restart();
+                }
             }
             return;
             //if(gameState ===0){
@@ -190,8 +203,8 @@
         };
         
         var cursors;
-        var gameState; //0은 게임 준비, 1은 플레이, 2는 게임오버
-        var second;
+        var gameState = 0; //0은 게임 준비, 1은 플레이, 2는 게임오버
+        var second = 100;
         var textSecond;
         var dummyPenguin;
         var bubblePenguin;
