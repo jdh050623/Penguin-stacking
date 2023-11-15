@@ -19,12 +19,13 @@ class Example extends Phaser.Scene
 	preload()
 	{
 		this.load.image('grid', 'assets/sky.png');
+		this.load.image('jumpPenguin', 'assets/jumpPenguin.png');
 	}
 
 	create()
 	{
         this.ground = this.add.tileSprite(400, 300, 0, 0, 'grid').setScrollFactor(0, 0);
-        
+        var jumpPenguin= this.physics.add.sprite(400, 650, 'jumpPenguin').setScale(1/6);
 		const cursors = this.input.keyboard.createCursorKeys();
 	
 		this.controls = new Phaser.Cameras.Controls.SmoothedKeyControl({
