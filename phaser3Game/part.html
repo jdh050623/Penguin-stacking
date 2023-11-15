@@ -36,6 +36,9 @@
             cursors = this.input.keyboard.createCursorKeys();
             this.sky = this.add.tileSprite(400, 300, 0, 0, 'sky').setScrollFactor(0, 0);
 
+            var ground = this.physics.add.sprite(400, 650, 'ground').setScale(2);
+            ground.body.pushable = false;
+
             const rainbowContainer = this.add.container(400, 300);
             const rainbow1 = this.physics.add.sprite(382, 0, 'rainbow');
             const rainbow2 = this.physics.add.sprite(-382, 0, 'rainbow');
@@ -66,7 +69,7 @@
             bubblePenguin.on('pointerdown', function(){// 버블펭귄 클릭했을 때
                 if(gameState === 1){ 
                 jumpPenguin= this.physics.add.sprite(bubblePenguin.x, bubblePenguin.y, 'jumpPenguin').setScale(1/6);
-                jumpPenguin.setVelocityY(-600) .setGravityY(600).setCollideWorldBounds(false);
+                jumpPenguin.setVelocityY(-600) .setGravityY(600);
                 jumpPenguin.body.onCollide = true;
                 bubblePenguin.setAlpha(0);//투명화
 
@@ -76,39 +79,72 @@
                     // 딜레이 후 행동
                     
                     this.physics.add.collider(jumpPenguin, dummyPenguin);
-                    //jumpPenguin.setCollideWorldBounds(true, 1, 1, true);
+                    this.physics.add.collider(jumpPenguin, ground); 
                     //jumpPenguin.setTint(0xf500ff3600); 색 바꾸기
                     },
-                })}
+                });}
             }, this);
-            
-            this.physics.world.on('worldbounds', (body, world) =>
-            {// 바꿔야함
-                jumpPenguin.destroy();
-                bubblePenguin.setAlpha(1);
-                second = second - 30;
+ 
+            bubbleTime.on('pointerdown', function(){// 버블타임을 클릭했을 때
+                if(gameState === 1){ 
+                    time = this.physics.add.sprite(bubbleTime.x, bubbleTime.y, 'time').setScale(1/3).setGravityY(600);
+                    time.body.onOverlap = true;
+                    time.body.pushable = false;
+                    this.physics.add.overlap(time, bubblePenguin);
+                    bubbleTime.setAlpha(0);
+                    
+                }
+            },this);
+
+            this.physics.world.on('overlap', (gameObject1, gameObject2) =>
+            {
+                time.destroy();
+                if(gameObject2 == bubblePenguin)
+                {
+                    second = second + 30;
+                }
             });
         
             this.physics.world.on('collide', (gameObject1, gameObject2) =>
             {
                 //충돌시 발생
-                dummyPenguin = this.physics.add.sprite(jumpPenguin.x, jumpPenguin.y, 'dummyPenguin').setScale(1/6).setImmovable();
-                jumpPenguin.destroy();
-                bubblePenguin.setAlpha(1);
-                cam.scrollY -= 100;
-                scoreText.y = cam.scrollY + 16;
-                this.textSecond.y = cam.scrollY + 16;
-                this.textGameOver.y = cam.scrollY + 250;
-                this.textReady.y = cam.scrollY + 300;
-                bubblePenguin.y = cam.scrollY + 545;
-                bubbleTime.y = cam.scrollY + 220;
-                rainbowContainer.y = cam.scrollY + 300;
-                score += 10;
-                scoreText.setText('Score: ' + score);
-                if(score % 100 == 0)
+
+                if(gameObject1 == jumpPenguin )
                 {
-                    bubbleTime.setAlpha(1);
+                    jumpPenguin.destroy();
+                    bubblePenguin.setAlpha(1);
+                    if(gameObject2 == dummyPenguin)
+                    {
+                        dummyPenguin = this.physics.add.sprite(jumpPenguin.x, jumpPenguin.y, 'dummyPenguin').setScale(1/6).setImmovable();
+                        cam.scrollY -= 100;
+                        scoreText.y = cam.scrollY + 16;
+                        this.textSecond.y = cam.scrollY + 16;
+                        this.textGameOver.y = cam.scrollY + 250;
+                        this.textReady.y = cam.scrollY + 300;
+                        bubblePenguin.y = cam.scrollY + 545;
+                        bubbleTime.y = cam.scrollY + 220;
+                        rainbowContainer.y = cam.scrollY + 300;
+                        score += 10;
+                        scoreText.setText('Score: ' + score);
+                        if(score % 100 == 0)
+                        {
+                            bubbleTime.setAlpha(1);
+                            this.time.addEvent({ //딜레이 주기
+                            delay: 8000,
+                            callback: ()=>{
+                            // 딜레이 후 행동
+                            bubbleTime.setAlpha(0);
+                            },
+                            });
+                        }
+                    }else if(gameObject2 == ground)
+                    {
+                       second = second - 30;
+                    }
+                    
                 }
+                
+                
             });
             //스코어
             scoreText = this.add.text(50, 16, 'score : 0', { font: '32px Arial', fill: '#000' });
